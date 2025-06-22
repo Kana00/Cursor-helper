@@ -43,12 +43,20 @@ void RenderInterface() {
         velocityHistory.RemoveAt(0);
     }
     auto dropVelocity = velocityDropDetection(velocityHistory);
-    if (dropVelocity != 0.0f) {
+    // if (dropVelocity != 0.0f) {
+    //     nvg::BeginPath();
+    //     nvg::FontSize(40.0f);
+    //     nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    //     nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
+    //     nvg::Text(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2 + 50) + 100, "" + dropVelocity);
+    // }
+
+    if (Time::Now - lastCollisionTime < 5000.0f && lastCollisionMsg != "") {
         nvg::BeginPath();
         nvg::FontSize(40.0f);
         nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
         nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
-        nvg::Text(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2 + 50) - 100, dropVelocity);
+        nvg::Text(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2 + 50) + 100, lastCollisionMsg);
     }
 
     nvg::BeginPath();
@@ -66,7 +74,8 @@ float velocityDropDetection(const array<float>& velocityHistory, float dropThres
     for (uint i = 1; i <= windowSize; ++i) {
         float delta = velocityHistory[velocityHistory.Length - i] - velocityHistory[velocityHistory.Length - i - 1];
         if (delta < dropThreshold) {
-            print("Collision détectée : chute de vélocité de " + delta);
+            lastCollisionMsg = Text::Format("%.2f", delta);
+            lastCollisionTime = Time::Now;
             // draw rectangle around the player
             nvg::BeginPath();
             nvg::Rect(vec2(Draw::GetWidth()/2 - 50, Draw::GetHeight()/2 - 50), vec2(100, 100));
@@ -101,3 +110,6 @@ vec4 GetColorFromVelocity(float velocity) {
         return vec4(color, 1.0f);
     }
 }
+
+string lastCollisionMsg = "";
+float lastCollisionTime = -10.0f;
