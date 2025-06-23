@@ -30,6 +30,10 @@ void Main() {
     // }
 }
 
+const uint maximumHistoryShow = 20;
+array<string> velocityHistoryDisplay;
+const uint offsetY = 50; // Offset for the Y position of the text
+
 void RenderInterface() {
     if (app is null || app.LoadedManiaTitle.TitleId != "obstacle@smokegun") return;
     CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
@@ -45,50 +49,54 @@ void RenderInterface() {
     velocityDropDetection(velocityHistory);
 
 
-    if (Time::Now - lastCollisionTime < 5000.0f && deltaCollision != "") {
+    if (velocityHistoryDisplay.Length > 0) {
         nvg::BeginPath();
         nvg::FontSize(40.0f);
         nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
         nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
-        string message = velocityBeforeLastCollisionMsg + " - " + deltaCollision + " = " + velocityAfterLastCollisionMsg;
-        nvg::Text(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2 + 50) + 100, message);
+
+        for (uint i = 0; i < velocityHistoryDisplay.Length; i++) {
+            nvg::Text(200, offsetY * (i + 1) + 200, velocityHistoryDisplay[i]);
+        }
     }
 
-    nvg::BeginPath();
-    nvg::Circle(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2), 25.0f);
-    nvg::FillColor(GetColorFromVelocity(horizontalVelocity));
-    nvg::Fill();
-    nvg::ClosePath();
+    // Draw the horizontal velocity as a circle in the center of the screen
+    // nvg::BeginPath();
+    // nvg::Circle(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2), 25.0f);
+    // nvg::FillColor(GetColorFromVelocity(horizontalVelocity));
+    // nvg::Fill();
+    // nvg::ClosePath();
 }
 
 array<float> velocityHistory;
 
-float velocityDropDetection(const array<float>& velocityHistory, float dropThreshold = -5.0f, uint windowSize = 5) {
-    if (velocityHistory.Length < windowSize + 1) return 0.0f; // Not enough data to analyze
-
+void velocityDropDetection(const array<float>& velocityHistory, float dropThreshold = -3.1f, uint windowSize = 5) {
     for (uint i = 1; i <= windowSize; ++i) {
         float velocityAfterDrop = velocityHistory[velocityHistory.Length - i];
         float velocityBeforeDrop = velocityHistory[velocityHistory.Length - i - 1];
         float delta = velocityAfterDrop - velocityBeforeDrop;
-        bool isInRespawning = velocityBeforeDrop == delta;
-        if (delta < dropThreshold && isInRespawning == false) {
+        bool isInRespawning = velocityAfterDrop != 0.0f;
+        if (delta < dropThreshold && isInRespawning) {
             deltaCollision = Text::Format("%.2f", Math::Abs(delta));
             velocityBeforeLastCollisionMsg = Text::Format("%.2f", velocityBeforeDrop);
             velocityAfterLastCollisionMsg = Text::Format("%.2f", velocityAfterDrop);
-            lastCollisionTime = Time::Now;
+            // lastCollisionTime = Time::Now;
             // draw rectangle around the player
             nvg::BeginPath();
             nvg::Rect(vec2(Draw::GetWidth()/2 - 50, Draw::GetHeight()/2 - 50), vec2(100, 100));
             nvg::FillColor(vec4(1.0f, 0.0f, 0.0f, 1.0f));
             nvg::Fill();
             nvg::ClosePath();
-
-
-            return delta; // Return the velocity before the drop and the drop value
+            string message = velocityBeforeLastCollisionMsg + " - " + deltaCollision + " = " + velocityAfterLastCollisionMsg;
+            // if the message is not already in the history, add it
+            if (velocityHistoryDisplay.Length == 0 || velocityHistoryDisplay[velocityHistoryDisplay.Length - 1] != message) {
+                velocityHistoryDisplay.InsertLast(message);
+            }
+            if (velocityHistoryDisplay.Length > maximumHistoryShow) {
+                velocityHistoryDisplay.RemoveAt(0);
+            }
         }
     }
-
-    return 0.0f; // No significant drop detected
 }
 
 vec4 GetColorFromVelocity(float velocity) {
