@@ -1,6 +1,9 @@
 CTrackMania @app = cast<CTrackMania>(GetApp());
 
+// Main entry point. Yieldable
 void Main() {
+    // clean the console
+    ClearConsole();
     while (app is null)
     {
         if (app !is null)
@@ -10,118 +13,26 @@ void Main() {
         }
         yield();
     }
-
-    print("Obstacle analysis loaded successfully!");
-
-    // auto audioPort = app.AudioPort;
-    // for (uint i = 0; i < audioPort.Sources.Length; i++) {
-    //     auto source = audioPort.Sources[i];
-
-    //     // Get the sound that the source can play
-    //     auto sound = source.PlugSound;
-
-    //     // Check if its file is an .ogg file
-    //     if (cast<CPlugFileOggVorbis>(sound.PlugFile) is null) {
-    //         // Skip if it's not an ogg file
-    //         continue;
-    //     }
-
-    //     source.Pitch = 0.3f;
-    // }
 }
 
-const uint maximumHistoryShow = 20;
-array<string> velocityHistoryDisplay;
-const uint offsetY = 50; // Offset for the Y position of the text
+// Render function called every frame intended only for menu items in the main menu of the UI
+void RenderMenuMain() {
+    bool appIsNotReadyToRenderMenu = app is null
+     || app.CurrentPlayground is null
+     || app.CurrentPlayground.GameTerminals.Length == 0
+     || app.CurrentPlayground.GameTerminals[0].GUIPlayer is null
+     || app.LoadedManiaTitle is null
+     || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
+    if (appIsNotReadyToRenderMenu) return;
 
-void RenderInterface() {
-    if (app is null || app.LoadedManiaTitle.TitleId != "obstacle@smokegun") return;
-    CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
-    CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
-    float hspeed = Math::Sqrt(sm_script.Velocity.x*sm_script.Velocity.x + sm_script.Velocity.z*sm_script.Velocity.z);
-    float horizontalVelocity = Math::Floor(hspeed * 36) / 10;
-    print(horizontalVelocity);
-    // record the horizontal velocity in history with a maximum of entries (cache)
-    velocityHistory.InsertLast(horizontalVelocity);
-    if (velocityHistory.Length > 100) {
-        velocityHistory.RemoveAt(0);
+    bool isMenuInitialized = UI::BeginMenu(menuItems.title, true);
+    if (isMenuInitialized == false) return;
+
+    // draw menu items
+    if (menuItems !is null && menuItems.mustBeVisible) {
+        menuItems.drawMainMenu();
     }
-    velocityDropDetection(velocityHistory);
+    menuItems.subMenus();
 
-
-    if (velocityHistoryDisplay.Length > 0) {
-        nvg::BeginPath();
-        nvg::FontSize(40.0f);
-        nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
-
-        for (uint i = 0; i < velocityHistoryDisplay.Length; i++) {
-            nvg::Text(200, offsetY * (i + 1) + 200, velocityHistoryDisplay[i]);
-        }
-    }
-
-    // Draw the horizontal velocity as a circle in the center of the screen
-    // nvg::BeginPath();
-    // nvg::Circle(vec2(Draw::GetWidth()/2, Draw::GetHeight()/2), 25.0f);
-    // nvg::FillColor(GetColorFromVelocity(horizontalVelocity));
-    // nvg::Fill();
-    // nvg::ClosePath();
+    UI::EndMenu();
 }
-
-array<float> velocityHistory;
-
-void velocityDropDetection(const array<float>& velocityHistory, float dropThreshold = -3.1f, uint windowSize = 5) {
-    for (uint i = 1; i <= windowSize; ++i) {
-        float velocityAfterDrop = velocityHistory[velocityHistory.Length - i];
-        float velocityBeforeDrop = velocityHistory[velocityHistory.Length - i - 1];
-        float delta = velocityAfterDrop - velocityBeforeDrop;
-        bool isInRespawning = velocityAfterDrop != 0.0f;
-        if (delta < dropThreshold && isInRespawning) {
-            deltaCollision = Text::Format("%.2f", Math::Abs(delta));
-            velocityBeforeLastCollisionMsg = Text::Format("%.2f", velocityBeforeDrop);
-            velocityAfterLastCollisionMsg = Text::Format("%.2f", velocityAfterDrop);
-            // lastCollisionTime = Time::Now;
-            // draw rectangle around the player
-            nvg::BeginPath();
-            nvg::Rect(vec2(Draw::GetWidth()/2 - 50, Draw::GetHeight()/2 - 50), vec2(100, 100));
-            nvg::FillColor(vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            nvg::Fill();
-            nvg::ClosePath();
-            string message = velocityBeforeLastCollisionMsg + " - " + deltaCollision + " = " + velocityAfterLastCollisionMsg;
-            // if the message is not already in the history, add it
-            if (velocityHistoryDisplay.Length == 0 || velocityHistoryDisplay[velocityHistoryDisplay.Length - 1] != message) {
-                velocityHistoryDisplay.InsertLast(message);
-            }
-            if (velocityHistoryDisplay.Length > maximumHistoryShow) {
-                velocityHistoryDisplay.RemoveAt(0);
-            }
-        }
-    }
-}
-
-vec4 GetColorFromVelocity(float velocity) {
-    vec3 red    = vec3(1.0f, 0.0f, 0.0f);
-    vec3 orange = vec3(1.0f, 0.65f, 0.0f);
-    vec3 green  = vec3(0.0f, 1.0f, 0.0f);
-
-    if (velocity <= 40.0f) {
-        return vec4(red, 1.0f);
-    } else if (velocity >= 68.0f) {
-        return vec4(green, 1.0f);
-    } else if (velocity <= 64.0f) {
-        // Interpolation rouge → orange (60 à 64)
-        float t = Math::Clamp((velocity - 60.0f) / 4.0f, 0.0f, 1.0f);
-        vec3 color = Math::Lerp(red, orange, t);
-        return vec4(color, 1.0f);
-    } else {
-        // Interpolation orange → vert (64 à 68)
-        float t = Math::Clamp((velocity - 64.0f) / 4.0f, 0.0f, 1.0f);
-        vec3 color = Math::Lerp(orange, green, t);
-        return vec4(color, 1.0f);
-    }
-}
-
-string velocityBeforeLastCollisionMsg = "";
-string deltaCollision = "";
-string velocityAfterLastCollisionMsg = "";
-float lastCollisionTime = -10.0f;
