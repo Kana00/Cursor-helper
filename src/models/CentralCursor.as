@@ -77,6 +77,10 @@ class CentralCursor {
                     UI::SameLine();
                     if (UI::Button(Icons::Trash + "##" + i)) {
                         drawSteps[i] = false;
+                        speedSteps.RemoveAt(i);
+                        colorSteps.RemoveAt(i);
+                        i--; // Decrement i to account for the removed item
+                        continue; // Skip the rest of the loop for this iteration
                     }
 
                     string menuLabel = Icons::Tachometer + " Speed";
