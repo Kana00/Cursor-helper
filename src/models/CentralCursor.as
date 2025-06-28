@@ -3,8 +3,8 @@ class CentralCursor {
     string settingsTitle = Icons::Cog + " Cursor settings";
     string type = "DOT";
     bool mustBeHollowed = false;
-    float normalScale = 2.0f;
-    float strokeWidth = 1.0f;
+    float normalScale = 2.4f;
+    float strokeWidth = 3.0f;
     bool mustDisplaySpeed = false;
     vec4[] colorSteps = {
         vec4(0.0f, 0.0f, 0.0f, 1.0f), // Black
