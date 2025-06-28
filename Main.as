@@ -38,3 +38,20 @@ void RenderInterface() {
         centralCursor.drawWindowSettings();
     }
 }
+
+void Update(float delta) {
+    bool appIsNotReadyToRenderMenu = app is null
+     || app.CurrentPlayground is null
+     || app.CurrentPlayground.GameTerminals.Length == 0
+     || app.CurrentPlayground.GameTerminals[0].GUIPlayer is null
+     || app.LoadedManiaTitle is null
+     || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
+
+     if (appIsNotReadyToRenderMenu) return;
+
+    // record the player's position
+    CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
+    CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
+    float horizontalSpeed = Math::Sqrt(sm_script.Velocity.x*sm_script.Velocity.x + sm_script.Velocity.z*sm_script.Velocity.z);
+    float velocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
+}
