@@ -3,8 +3,9 @@ class CentralCursor {
     string settingsTitle = Icons::Cog + " Cursor settings";
     string type = "DOT";
     bool mustBeHollowed = false;
-    float normalScale = 1.0f;
+    float normalScale = 2.0f;
     float strokeWidth = 1.0f;
+    bool mustDisplaySpeed = false;
     vec4[] colorSteps = {
         vec4(0.0f, 0.0f, 0.0f, 1.0f), // Black
         vec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
@@ -65,6 +66,8 @@ class CentralCursor {
 
             // hollowed cursor option checkbox
             mustBeHollowed = UI::Checkbox("Hollowed Cursor", mustBeHollowed);
+
+            mustDisplaySpeed = UI::Checkbox("Display Speed", mustDisplaySpeed);
 
             // Draw cursor scale
             UI::Text("Cursor Scale");
@@ -154,10 +157,26 @@ class CentralCursor {
             // vec2 SQUAREBaseRight = cursorCenter - vec2(10.0f * normalScale, -5.0f * normalScale);
             // UI::DrawTriangle(SQUARETip, SQUAREBaseLeft, SQUAREBaseRight, colorSteps[0]);
         }
+
+        if (mustDisplaySpeed) {
+            // Draw the speed number at the cursor position
+            drawSpeedNumber(cursorPosition, horizontalVelocity, scale);
+        }
+    }
+
+    void drawSpeedNumber(vec2 position, float speed, float scale) {
+        string speedText = tostring(Math::Round(speed));
+
+        // Draw the speed text
+        nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
+        nvg::FontSize(15.0f * scale);
+        nvg::Text(position, speedText);
+        // UI::DrawText(speedText, textPosition, getColorForSpeed(speed), scale, UI::Font::Medium, UI::TextAlign::Center);
+
     }
 
     void drawCircleDot(vec2 position, float speed, float scale, float rotation) {
-        float radius = 10.0f * scale; // Adjust the radius as needed
+        float radius = 10.0f * scale;
         vec4 color = getColorForSpeed(speed);
 
         if (mustBeHollowed == false) {
@@ -174,16 +193,49 @@ class CentralCursor {
             nvg::Stroke();
             nvg::ClosePath();
         }
+    }
 
+    void sortStepsArrayBySpeed() {
+        // Sort the speedSteps, colorSteps, and drawSteps arrays based on speedSteps
+        for (uint i = 0; i < speedSteps.Length - 1; i++) {
+            for (uint j = i + 1; j < speedSteps.Length; j++) {
+                if (speedSteps[i] > speedSteps[j]) {
+                    // Swap speedSteps
+                    uint tempSpeed = speedSteps[i];
+                    speedSteps[i] = speedSteps[j];
+                    speedSteps[j] = tempSpeed;
+
+                    // Swap colorSteps
+                    vec4 tempColor = colorSteps[i];
+                    colorSteps[i] = colorSteps[j];
+                    colorSteps[j] = tempColor;
+
+                    // Swap drawSteps
+                    bool tempDraw = drawSteps[i];
+                    drawSteps[i] = drawSteps[j];
+                    drawSteps[j] = tempDraw;
+                }
+            }
+        }
     }
 
     vec4 getColorForSpeed(float speed) {
+        sortStepsArrayBySpeed();
+
+        // Find the appropriate color for the given speed
         for (uint i = 0; i < speedSteps.Length; i++) {
-            if (speed >= speedSteps[i] && drawSteps[i]) {
+            if (drawSteps[i] && speed <= speedSteps[i]) {
                 return colorSteps[i];
             }
         }
-        return vec4(1.0f, 1.0f, 1.0f, 1.0f); // Default to white if no match found
+
+        // If no speed step matches, return the last color
+        if (speedSteps.Length > 0) {
+            return colorSteps[colorSteps.Length - 1];
+        }
+
+        // Default color if no steps are defined
+        return vec4(1.0f, 1.0f, 1.0f, 1.0f); // White
     }
 }
 
