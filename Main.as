@@ -39,6 +39,9 @@ void RenderInterface() {
     }
 }
 
+// array<float> velocityHistory;
+// int maximumVelocityHistorySize = 10000;
+// Called every frame. delta is the delta time (milliseconds since last frame).
 void Update(float delta) {
     bool appIsNotReadyToRenderMenu = app is null
      || app.CurrentPlayground is null
@@ -47,11 +50,17 @@ void Update(float delta) {
      || app.LoadedManiaTitle is null
      || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
 
-     if (appIsNotReadyToRenderMenu) return;
+    if (appIsNotReadyToRenderMenu) return;
 
     // record the player's position
-    CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
-    CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
-    float horizontalSpeed = Math::Sqrt(sm_script.Velocity.x*sm_script.Velocity.x + sm_script.Velocity.z*sm_script.Velocity.z);
-    float velocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
+    // CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
+    // CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
+
+    // float horizontalVelocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
+    // if (velocityHistory.Length >= maximumVelocityHistorySize) {
+    //     velocityHistory.RemoveAt(0); // Remove the oldest entry
+    // }
+    // velocityHistory.InsertLast(velocity);
+
+    centralCursor.drawCursor();
 }
