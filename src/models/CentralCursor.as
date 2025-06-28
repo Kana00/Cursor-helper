@@ -2,21 +2,22 @@ class CentralCursor {
     string optionTitle = Icons::Crosshairs + " Cursor";
     string settingsTitle = Icons::Cog + " Cursor settings";
     string type = "DOT";
-    bool mustBeHollowed = false;
+    bool isCursorShow = true;
+    bool settingsMustBeShow = false;
+    bool mustBeHollowed = true;
+    bool mustDisplaySpeed = true;
+    bool mustBeInfluencedBySpeed = true;
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
-    bool mustDisplaySpeed = false;
+    float speedInfluenceFactor = 1.0f;
     vec4[] colorSteps = {
-        vec4(0.0f, 0.0f, 0.0f, 1.0f), // Black
         vec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
         vec4(1.0f, 1.0f, 0.0f, 1.0f), // Yellow
         vec4(0.0f, 1.0f, 0.0f, 1.0f), // Green
         vec4(0.0f, 0.0f, 1.0f, 1.0f) // Blue
     };
-    uint[] speedSteps = { 40, 50, 60, 70, 80 };
-    bool[] drawSteps = { true, true, true, true, true };
-    bool isCursorShow = false;
-    bool settingsMustBeShow = false;
+    uint[] speedSteps = { 50, 60, 70, 80 };
+    bool[] drawSteps = { true, true, true, true };
 
     void drawCursorSubMenu() {
         bool isInitialized = UI::MenuItem(optionTitle, "", isCursorShow, true);
@@ -69,6 +70,12 @@ class CentralCursor {
 
             mustDisplaySpeed = UI::Checkbox("Display Speed", mustDisplaySpeed);
 
+            mustBeInfluencedBySpeed = UI::Checkbox("Influenced by Speed", mustBeInfluencedBySpeed);
+            if (mustBeInfluencedBySpeed) {
+                speedInfluenceFactor = UI::SliderFloat("Speed Influence Factor", speedInfluenceFactor, 0.1f, 3.0f, "%.1f", UI::SliderFlags::AlwaysClamp);
+                UI::Text("Current Speed Influence Factor: " + speedInfluenceFactor);
+            }
+
             // Draw cursor scale
             UI::Text("Cursor Scale");
             normalScale = UI::SliderFloat("Scale", normalScale, 0.1f, 5.0f, "%.1f", UI::SliderFlags::AlwaysClamp);
@@ -95,7 +102,7 @@ class CentralCursor {
                 }
             }
 
-            if (UI::BeginMenu("Implement color steps (" + speedSteps.Length + ")")) {
+            if (UI::BeginMenu("Implemented color steps (" + speedSteps.Length + ")")) {
                 for (uint i = 0; i < speedSteps.Length; i++) {
                     bool drawStep = drawSteps[i];
                     drawStep = UI::Checkbox("Draw " + speedSteps[i] + " km/h", drawStep);
@@ -168,16 +175,20 @@ class CentralCursor {
         string speedText = tostring(Math::Round(speed));
 
         // Draw the speed text
-        nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
+        // nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
         nvg::FontSize(12.0f * scale);
-        uint yOffset = 3;
-        nvg::Text(position.x, position.y + yOffset, speedText);
-        // UI::DrawText(speedText, textPosition, getColorForSpeed(speed), scale, UI::Font::Medium, UI::TextAlign::Center);
-
+        nvg::TextLetterSpacing(0.8f * scale);
+        vec2 textSize = nvg::TextBounds(speedText);
+        nvg::Text(position.x - (textSize.x/2), position.y + (textSize.y/2.7), speedText);
+        // float radius = 10.0f * scale;
+        // nvg::TextBox(position.x - radius, position.y + yOffset, radius * 2, speedText);
     }
 
     void drawCircleDot(vec2 position, float speed, float scale, float rotation) {
         float radius = 10.0f * scale;
+        if (mustBeInfluencedBySpeed) {
+            radius = 10.0f * scale + (speed * speedInfluenceFactor);
+        }
         vec4 color = getColorForSpeed(speed);
 
         if (mustBeHollowed == false) {
