@@ -30,3 +30,11 @@ void RenderMenuMain() {
         menuItems.drawMenus();
     }
 }
+
+// Render function called every frame intended for UI
+void RenderInterface() {
+    // only for windows
+    if(centralCursor !is null) {
+        centralCursor.drawWindowSettings();
+    }
+}

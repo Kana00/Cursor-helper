@@ -26,12 +26,7 @@ class CentralCursor {
         }
 
         bool isInitializedWindow = UI::Begin(settingsTitle, settingsMustBeShow, UI::WindowFlags::AlwaysAutoResize);
-
-        if (isInitializedWindow == false) {
-            print("Window closed unexpectedly");
-            sleep(4000);
-            return;
-        }
+        if (isInitializedWindow == false) return;
 
         UI::End();
     }
