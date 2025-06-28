@@ -19,7 +19,8 @@ class MenuItems {
     }
 
     void subMenus() {
-        centralCursor.drawMenus();
+        centralCursor.drawCursorSubMenu();
+        centralCursor.drawSettingsSubMenu();
     }
 }
 

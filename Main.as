@@ -23,16 +23,16 @@ void RenderMenuMain() {
      || app.CurrentPlayground.GameTerminals[0].GUIPlayer is null
      || app.LoadedManiaTitle is null
      || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
+
     if (appIsNotReadyToRenderMenu) return;
 
     bool isMenuInitialized = UI::BeginMenu(menuItems.title, true);
     if (isMenuInitialized == false) return;
 
-    // draw menu items
-    if (menuItems !is null && menuItems.mustBeVisible) {
+    if (menuItems !is null) {
         menuItems.drawMainMenu();
+        menuItems.subMenus();
     }
-    menuItems.subMenus();
 
     UI::EndMenu();
 }

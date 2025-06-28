@@ -6,10 +6,17 @@ class CentralCursor {
     bool isCursorShow = false;
     bool settingsShow = false;
 
-    void drawMenus() {
+    void drawCursorSubMenu() {
         bool isInitialized = UI::MenuItem(optionTitle, "", isCursorShow, true);
         if (isInitialized) {
             isCursorShow = !isCursorShow;
+        }
+    }
+
+    void drawSettingsSubMenu() {
+        bool isInitialized = UI::MenuItem(settingsTitle, "", settingsShow, true);
+        if (isInitialized) {
+            settingsShow = !settingsShow;
         }
     }
 }
