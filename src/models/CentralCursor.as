@@ -169,8 +169,9 @@ class CentralCursor {
 
         // Draw the speed text
         nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
-        nvg::FontSize(15.0f * scale);
-        nvg::Text(position, speedText);
+        nvg::FontSize(12.0f * scale);
+        uint yOffset = 3;
+        nvg::Text(position.x, position.y + yOffset, speedText);
         // UI::DrawText(speedText, textPosition, getColorForSpeed(speed), scale, UI::Font::Medium, UI::TextAlign::Center);
 
     }
