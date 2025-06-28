@@ -11,7 +11,6 @@ class CentralCursor {
     };
     uint[] speedSteps = { 40, 50, 60, 70, 80 };
     bool[] drawSteps = { true, true, true, true, true };
-
     bool isCursorShow = false;
     bool settingsMustBeShow = false;
 
@@ -113,4 +112,4 @@ class CentralCursor {
     }
 }
 
-CentralCursor @centralCursor = CentralCursor();
+CentralCursor@ centralCursor = CentralCursor();
