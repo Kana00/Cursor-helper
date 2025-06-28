@@ -4,7 +4,7 @@ class CentralCursor {
     string type = "dot";
 
     bool isCursorShow = false;
-    bool settingsShow = false;
+    bool settingsMustBeShow = false;
 
     void drawCursorSubMenu() {
         bool isInitialized = UI::MenuItem(optionTitle, "", isCursorShow, true);
@@ -14,10 +14,26 @@ class CentralCursor {
     }
 
     void drawSettingsSubMenu() {
-        bool isInitialized = UI::MenuItem(settingsTitle, "", settingsShow, true);
+        bool isInitialized = UI::MenuItem(settingsTitle, "", settingsMustBeShow, true);
         if (isInitialized) {
-            settingsShow = !settingsShow;
+            settingsMustBeShow = !settingsMustBeShow;
         }
+    }
+
+    void drawWindowSettings() {
+        if (settingsMustBeShow == false) {
+            return;
+        }
+
+        bool isInitializedWindow = UI::Begin(settingsTitle, settingsMustBeShow, UI::WindowFlags::AlwaysAutoResize);
+
+        if (isInitializedWindow == false) {
+            print("Window closed unexpectedly");
+            sleep(4000);
+            return;
+        }
+
+        UI::End();
     }
 }
 

@@ -26,13 +26,7 @@ void RenderMenuMain() {
 
     if (appIsNotReadyToRenderMenu) return;
 
-    bool isMenuInitialized = UI::BeginMenu(menuItems.title, true);
-    if (isMenuInitialized == false) return;
-
     if (menuItems !is null) {
-        menuItems.drawMainMenu();
-        menuItems.subMenus();
+        menuItems.drawMenus();
     }
-
-    UI::EndMenu();
 }
