@@ -37,6 +37,16 @@ class CentralCursor {
         bool isInitializedWindow = UI::Begin(settingsTitle, settingsMustBeShow, UI::WindowFlags::AlwaysAutoResize);
 
         if (isInitializedWindow == true) {
+            // Description
+            UI::Text("Central cursor settings allow you to customize the appearance and behavior");
+            UI::Text("of the central cursor in the game. You can choose the cursor type, add or");
+            UI::Text("remove speed steps, and set colors for each speed step.");
+
+            // Draw cursor visibility toggle
+            isCursorShow = UI::Checkbox(optionTitle, isCursorShow);
+
+            UI::Separator();
+
             // Draw cursor type selection
             UI::Text("Cursor Type");
             if (UI::RadioButton("Dot", type == "DOT")) {
@@ -69,7 +79,6 @@ class CentralCursor {
 
             if (UI::BeginMenu("Implement color steps (" + speedSteps.Length + ")")) {
                 for (uint i = 0; i < speedSteps.Length; i++) {
-                    // Utiliser des variables temporaires pour éviter que UI::Checkbox/UI::SliderInt/UI::InputColor4 modifient toutes les valeurs
                     bool drawStep = drawSteps[i];
                     drawStep = UI::Checkbox("Draw " + speedSteps[i] + " km/h", drawStep);
                     drawSteps[i] = drawStep;
@@ -104,4 +113,4 @@ class CentralCursor {
     }
 }
 
-CentralCursor@ centralCursor = CentralCursor();
+CentralCursor @centralCursor = CentralCursor();
