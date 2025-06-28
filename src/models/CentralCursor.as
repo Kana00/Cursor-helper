@@ -26,10 +26,14 @@ class CentralCursor {
         }
 
         bool isInitializedWindow = UI::Begin(settingsTitle, settingsMustBeShow, UI::WindowFlags::AlwaysAutoResize);
-        if (isInitializedWindow == false) return;
+        if (isInitializedWindow == true) {
+            UI::Text(" Variables to record:");
+            string variables = "test";
+            variables = UI::InputText("label", variables);
+        }
 
         UI::End();
     }
 }
 
-CentralCursor @centralCursor = CentralCursor();
+CentralCursor@ centralCursor = CentralCursor();
