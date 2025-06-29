@@ -9,7 +9,7 @@ class CentralCursor {
     bool mustBeInfluencedBySpeed = true;
     bool mustShowYaw = true;
     bool mustShowYawText = true;
-    bool mustLiveResetYawAngle = true;
+    bool mustLiveResetYawAngleByWall = true;
     uint16 yawLines = 1;
     int yamLengthLine = 10;
     float normalScale = 2.4f;
@@ -92,7 +92,7 @@ class CentralCursor {
                 yawLines = UI::SliderInt("Yaw Lines", yawLines, 1, 15);
                 yamLengthLine = UI::SliderInt("Yaw Line Length", yamLengthLine, 1, 50);
                 mustShowYawText = UI::Checkbox("Show Yaw Text", mustShowYawText);
-                mustLiveResetYawAngle = UI::Checkbox("Show angle by wall", mustLiveResetYawAngle);
+                mustLiveResetYawAngleByWall = UI::Checkbox("Show angle by wall", mustLiveResetYawAngleByWall);
             }
 
             UI::Separator(); // --------------------------------------------------------------------
@@ -236,9 +236,20 @@ class CentralCursor {
         nvg::ResetTransform();
 
         if (mustShowYawText) {
-            string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
-            vec2 textSize = nvg::TextBounds(yawText);
-            nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+            if(mustLiveResetYawAngleByWall) {
+                string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
+                // Displays the difference between the current angle and the nearest wall angle (0 or 45)
+                float yawDeg = Math::Abs(Math::Round(Math::ToDeg(rotation)));
+                float nearestWall = Math::Round(yawDeg / 45.0f) * 45.0f;
+                float diff = Math::Abs(yawDeg - nearestWall);
+                yawText = tostring(int(diff));
+                vec2 textSize = nvg::TextBounds(yawText);
+                nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+            } else {
+                string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
+                vec2 textSize = nvg::TextBounds(yawText);
+                nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+            }
         }
     }
 
