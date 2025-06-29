@@ -1,5 +1,5 @@
 class MenuItems {
-    string title = "\\$3f0Cursor \\$fffHelper";
+    string title = "\\$3f0Custom \\$fffCursor";
     bool mustBeVisible = false;
 
     void drawMenus() {

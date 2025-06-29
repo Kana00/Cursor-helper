@@ -26,8 +26,7 @@ void RenderMenuMain() {
      || app.CurrentPlayground is null
      || app.CurrentPlayground.GameTerminals.Length == 0
      || app.CurrentPlayground.GameTerminals[0].GUIPlayer is null
-     || app.LoadedManiaTitle is null
-     || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
+     || app.LoadedManiaTitle is null;
 
     if (appIsNotReadyToRenderMenu) return;
 
@@ -47,15 +46,14 @@ void RenderInterface() {
 // array<float> velocityHistory;
 // int maximumVelocityHistorySize = 10000;
 // Called every frame. delta is the delta time (milliseconds since last frame).
-auto@ motorSound = Audio::LoadSample("assets/sounds/Sweep_Tone.ogg.ogg", false);
-auto@ voice = Audio::Start(motorSound);
+auto@ sample = Audio::LoadSample("assets/sounds/Sweep_Tone.ogg", false);
+auto@ voice = Audio::Start(sample);
 void Update(float delta) {
     bool appIsNotReadyToRenderMenu = app is null
      || app.CurrentPlayground is null
      || app.CurrentPlayground.GameTerminals.Length == 0
      || app.CurrentPlayground.GameTerminals[0].GUIPlayer is null
-     || app.LoadedManiaTitle is null
-     || app.LoadedManiaTitle.TitleId != "obstacle@smokegun";
+     || app.LoadedManiaTitle is null;
 
     if (appIsNotReadyToRenderMenu) return;
 
