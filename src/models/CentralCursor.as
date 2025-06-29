@@ -188,9 +188,7 @@ class CentralCursor {
 
         // Draw the speed text
         // nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
-        nvg::FontSize(12.0f * scale);
-        nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        nvg::TextLetterSpacing(0.8f * scale);
+        setFontSettings(scale);
         vec2 textSize = nvg::TextBounds(speedText);
         nvg::Text(position.x - (textSize.x/2), position.y + (textSize.y/2.7), speedText);
         // float radius = 10.0f * scale;
@@ -257,8 +255,7 @@ class CentralCursor {
 
         if (mustShowYawText) {
             float yOffset = position.y - effectiveRadius - 20;
-            nvg::FontSize(12.0f * scale);
-            nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            setFontSettings(scale);
             if(mustLiveResetYawAngleByWall) {
                 string yawText = tostring(int(Math::Abs(diff)));
                 vec2 textSize = nvg::TextBounds(yawText);
@@ -269,6 +266,12 @@ class CentralCursor {
                 nvg::Text(position.x - (textSize.x/2), yOffset, yawText);
             }
         }
+    }
+
+    void setFontSettings(float scale) {
+        nvg::FontSize(12.0f * scale);
+        nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        nvg::TextLetterSpacing(0.8f * scale);
     }
 
 
