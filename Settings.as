@@ -1,8 +1,6 @@
 [Setting name="Options as JSON for Cursor" multiline description="\\$f44DON'T\\$fff edit this settings manually. Use the window in the main menu to edit it visually. You can also copy this JSON to share your settings with others."]
 string Setting_Cursor = """
 {
-    "optionTitle": "Cursor",
-    "settingsTitle": "Cursor settings",
     "type": "DOT",
     "isCursorShow": true,
     "settingsMustBeShow": false,

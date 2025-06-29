@@ -422,8 +422,6 @@ class CentralCursor {
 
         try {
             string jsonSettings = "{\n";
-            jsonSettings += "    \"optionTitle\": \"" + optionTitle + "\",\n";
-            jsonSettings += "    \"settingsTitle\": \"" + settingsTitle + "\",\n";
             jsonSettings += "    \"type\": \"" + type + "\",\n";
             jsonSettings += "    \"isCursorShow\": " + (isCursorShow ? "true" : "false") + ",\n";
             jsonSettings += "    \"settingsMustBeShow\": " + (settingsMustBeShow ? "true" : "false") + ",\n";
@@ -483,8 +481,6 @@ class CentralCursor {
             Json::Value root = Json::Parse(Setting_Cursor);
 
             // Read basic properties directly from root (following your example pattern)
-            optionTitle = root["optionTitle"];
-            settingsTitle = root["settingsTitle"];
             type = root["type"];
             isCursorShow = root["isCursorShow"];
             settingsMustBeShow = root["settingsMustBeShow"];
