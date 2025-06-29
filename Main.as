@@ -3,7 +3,7 @@ CTrackMania @app = cast<CTrackMania>(GetApp());
 // Main entry point. Yieldable.
 void Main() {
     // clean the console
-    printSpaceToConsole();
+    // printSpaceToConsole();
     while (app is null)
     {
         if (app !is null)
