@@ -47,7 +47,7 @@ void RenderInterface() {
 // array<float> velocityHistory;
 // int maximumVelocityHistorySize = 10000;
 // Called every frame. delta is the delta time (milliseconds since last frame).
-auto@ motorSound = Audio::LoadSample("assets/sounds/OnlineSound_net_Sweep_Tone.ogg", false);
+auto@ motorSound = Audio::LoadSample("assets/sounds/Sweep_Tone.ogg.ogg", false);
 auto@ voice = Audio::Start(motorSound);
 void Update(float delta) {
     bool appIsNotReadyToRenderMenu = app is null
