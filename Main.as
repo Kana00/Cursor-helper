@@ -52,15 +52,5 @@ void Update(float delta) {
 
     if (appIsNotReadyToRenderMenu) return;
 
-    // record the player's position
-    // CSmPlayer@ sm_player = cast<CSmPlayer>(app.CurrentPlayground.GameTerminals[0].GUIPlayer);
-    // CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
-
-    // float horizontalVelocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
-    // if (velocityHistory.Length >= maximumVelocityHistorySize) {
-    //     velocityHistory.RemoveAt(0); // Remove the oldest entry
-    // }
-    // velocityHistory.InsertLast(velocity);
-
     centralCursor.drawCursor();
 }
