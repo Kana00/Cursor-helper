@@ -16,7 +16,6 @@ void Main() {
 
     if(centralCursor !is null) {
         centralCursor.deserializeAndReadSettings();
-
     }
 }
 
