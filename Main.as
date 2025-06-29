@@ -14,7 +14,10 @@ void Main() {
         yield();
     }
 
-    centralCursor.deserializeAndReadSettings();
+    if(centralCursor !is null) {
+        centralCursor.deserializeAndReadSettings();
+
+    }
 }
 
 // Render function called every frame intended only for menu items in the main menu of the UI.
@@ -44,6 +47,8 @@ void RenderInterface() {
 // array<float> velocityHistory;
 // int maximumVelocityHistorySize = 10000;
 // Called every frame. delta is the delta time (milliseconds since last frame).
+auto@ motorSound = Audio::LoadSample("assets/sounds/OnlineSound_net_Sweep_Tone.ogg", false);
+auto@ voice = Audio::Start(motorSound);
 void Update(float delta) {
     bool appIsNotReadyToRenderMenu = app is null
      || app.CurrentPlayground is null
@@ -57,7 +62,14 @@ void Update(float delta) {
     centralCursor.drawCursor(delta);
 }
 
-// Called when the plugin is unloaded and completely removed from memory.
-// void OnSettingsChanged() {
-//     print("Settings changed, updating array from JSON...");
-// }
+void OnDisabled() {
+    // prevent leak memory
+    voice.Play();
+    voice.SetPosition(voice.GetLength());
+}
+
+void OnDestroyed() {
+    // prevent leak memory
+    voice.Play();
+    voice.SetPosition(voice.GetLength());
+}

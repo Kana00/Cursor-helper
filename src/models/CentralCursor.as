@@ -1,33 +1,3 @@
-[Setting name="Options as JSON for Cursor" multiline description="\\$f44DON'T\\$fff edit this settings manually. Use the window in the main menu to edit it visually. You can also copy this JSON to share your settings with others."]
-string Setting_Cursor = """
-{
-    "optionTitle": "Cursor",
-    "settingsTitle": "Cursor settings",
-    "type": "DOT",
-    "isCursorShow": true,
-    "settingsMustBeShow": false,
-    "mustBeHollowed": true,
-    "mustDisplaySpeed": true,
-    "mustBeInfluencedBySpeed": true,
-    "mustShowYaw": true,
-    "mustShowYawText": false,
-    "mustLiveResetYawAngleByWall": true,
-    "yawLines": 4,
-    "yamLengthLine": 150,
-    "normalScale": 2.4,
-    "strokeWidth": 3.0,
-    "speedInfluenceFactor": 1.0,
-    "updateDisplaySpeedByHz": 7.0,
-    "colorSteps": [
-        [1.0, 0.0, 0.0, 1.0], // Red
-        [1.0, 1.0, 0.0, 1.0], // Yellow
-        [0.0, 1.0, 0.0, 1.0], // Green
-        [0.0, 0.0, 1.0, 1.0]  // Blue
-    ],
-    "speedSteps": [50, 60, 70, 80],
-    "drawSteps": [true, true, true, true]
-}
-""";
 class CentralCursor {
     string optionTitle = Icons::Crosshairs + " Cursor";
     string settingsTitle = Icons::Cog + " Cursor settings";
@@ -55,10 +25,10 @@ class CentralCursor {
     float timeSinceLastUpdate = 0.0f;
 
     vec4[] colorSteps = {
-        vec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
-        vec4(1.0f, 1.0f, 0.0f, 1.0f), // Yellow
-        vec4(0.0f, 1.0f, 0.0f, 1.0f), // Green
-        vec4(0.0f, 0.0f, 1.0f, 1.0f) // Blue
+        vec4(1.0f, 0.0f, 0.0f, 1.0f), // Default Red
+        vec4(1.0f, 1.0f, 0.0f, 1.0f), // Default Yellow
+        vec4(0.0f, 1.0f, 0.0f, 1.0f), // Default Green
+        vec4(0.0f, 0.0f, 1.0f, 1.0f) // Default Blue
     };
     uint[] speedSteps = { 50, 60, 70, 80 };
     bool[] drawSteps = { true, true, true, true };
@@ -129,6 +99,15 @@ class CentralCursor {
             // Draw stroke width
             UI::Text("Stroke Width");
             strokeWidth = UI::SliderFloat("Width", strokeWidth, 0.1f, 10.0f, "%.1f", UI::SliderFlags::AlwaysClamp);
+
+            UI::Separator(); // --------------------------------------------------------------------
+
+            // sound cursor
+            mustPlaySpeedSound = UI::Checkbox("Play Speed Sound", mustPlaySpeedSound);
+            if (mustPlaySpeedSound) {
+                volume = UI::SliderFloat("Sound Volume", volume, 0.0f, 1.0f, "%.2f", UI::SliderFlags::AlwaysClamp);
+                UI::Text("Current Sound Volume: " + tostring(Math::Round(volume * 100)) + "%");
+            }
 
             UI::Separator(); // --------------------------------------------------------------------
 
