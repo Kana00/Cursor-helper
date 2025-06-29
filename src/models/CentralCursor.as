@@ -15,7 +15,7 @@ class CentralCursor {
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
     float speedInfluenceFactor = 1.0f;
-    float updateDisplaySpeedByHz = 1.0f;
+    float updateDisplaySpeedByHz = 10.0f;
 
     // Variables for speed display frequency control
     float lastDisplayedSpeed = 0.0f;
