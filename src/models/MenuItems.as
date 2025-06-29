@@ -1,5 +1,5 @@
 class MenuItems {
-    string title = "\\$3f0Obstacle \\$fffHelper";
+    string title = "\\$3f0Cursor \\$fffHelper";
     bool mustBeVisible = false;
 
     void drawMenus() {
