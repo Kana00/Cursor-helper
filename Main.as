@@ -1,6 +1,6 @@
 CTrackMania @app = cast<CTrackMania>(GetApp());
 
-// Main entry point. Yieldable
+// Main entry point. Yieldable.
 void Main() {
     // clean the console
     ClearConsole();
@@ -13,9 +13,11 @@ void Main() {
         }
         yield();
     }
+
+    centralCursor.deserializeAndReadSettings();
 }
 
-// Render function called every frame intended only for menu items in the main menu of the UI
+// Render function called every frame intended only for menu items in the main menu of the UI.
 void RenderMenuMain() {
     bool appIsNotReadyToRenderMenu = app is null
      || app.CurrentPlayground is null
@@ -31,7 +33,7 @@ void RenderMenuMain() {
     }
 }
 
-// Render function called every frame intended for UI
+// Render function called every frame intended for UI.
 void RenderInterface() {
     // only for windows
     if(centralCursor !is null) {
@@ -54,3 +56,8 @@ void Update(float delta) {
 
     centralCursor.drawCursor(delta);
 }
+
+// Called when the plugin is unloaded and completely removed from memory.
+// void OnSettingsChanged() {
+//     print("Settings changed, updating array from JSON...");
+// }

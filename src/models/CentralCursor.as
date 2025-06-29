@@ -1,3 +1,33 @@
+[Setting name="Options as JSON for Cursor" multiline description="\\$f44DON'T\\$fff edit this settings manually. Use the window in the main menu to edit it visually. You can also copy this JSON to share your settings with others."]
+string Setting_Cursor = """
+{
+    "optionTitle": "Cursor",
+    "settingsTitle": "Cursor settings",
+    "type": "DOT",
+    "isCursorShow": true,
+    "settingsMustBeShow": false,
+    "mustBeHollowed": true,
+    "mustDisplaySpeed": true,
+    "mustBeInfluencedBySpeed": true,
+    "mustShowYaw": true,
+    "mustShowYawText": false,
+    "mustLiveResetYawAngleByWall": true,
+    "yawLines": 4,
+    "yamLengthLine": 150,
+    "normalScale": 2.4,
+    "strokeWidth": 3.0,
+    "speedInfluenceFactor": 1.0,
+    "updateDisplaySpeedByHz": 7.0,
+    "colorSteps": [
+        [1.0, 0.0, 0.0, 1.0], // Red
+        [1.0, 1.0, 0.0, 1.0], // Yellow
+        [0.0, 1.0, 0.0, 1.0], // Green
+        [0.0, 0.0, 1.0, 1.0]  // Blue
+    ],
+    "speedSteps": [50, 60, 70, 80],
+    "drawSteps": [true, true, true, true]
+}
+""";
 class CentralCursor {
     string optionTitle = Icons::Crosshairs + " Cursor";
     string settingsTitle = Icons::Cog + " Cursor settings";
@@ -10,12 +40,14 @@ class CentralCursor {
     bool mustShowYaw = true;
     bool mustShowYawText = false;
     bool mustLiveResetYawAngleByWall = true;
+    bool mustPlaySpeedSound = true;
+    float volume = 0.05f;
     uint16 yawLines = 4;
     int yamLengthLine = 150;
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
     float speedInfluenceFactor = 1.0f;
-    float updateDisplaySpeedByHz = 10.0f;
+    float updateDisplaySpeedByHz = 7.0f;
 
     // Variables for speed display frequency control
     float lastDisplayedSpeed = 0.0f;
@@ -35,6 +67,7 @@ class CentralCursor {
         bool isInitialized = UI::MenuItem(optionTitle, "", isCursorShow, true);
         if (isInitialized) {
             isCursorShow = !isCursorShow;
+            saveAndSerializeSettings();
         }
     }
 
@@ -160,6 +193,8 @@ class CentralCursor {
             }
         }
         UI::End();
+
+        saveAndSerializeSettings();
     }
 
     void drawCursor(float delta) {
@@ -195,6 +230,53 @@ class CentralCursor {
         if (mustShowYaw) {
             // Draw the yaw cross at the cursor position
             drawYawCross(cursorPosition, scale, radianRotation, horizontalVelocity, normalRadius);
+        }
+
+        if (mustPlaySpeedSound) {
+            // Clamp speed to maximum of 160 km/h
+            float clampedSpeed = Math::Min(horizontalVelocity, 160.0f);
+
+            if (clampedSpeed <= 0.0f) {
+                // Pause sound when speed is 0 or negative
+                if (!voice.IsPaused()) {
+                    voice.Pause();
+                }
+            } else {
+                // Resume sound if paused
+                if (voice.IsPaused()) {
+                    voice.Play();
+                    voice.SetGain(volume);
+                }
+
+                // Calculate target position based on speed (0-160 km/h maps to 0-100% of sound length)
+                auto soundLength = voice.GetLength();
+                float targetPosition = (clampedSpeed / 160.0f) * soundLength;
+
+                // Get current position to avoid brutal cuts
+                float currentPosition = voice.GetPosition();
+
+                // Only update position if the difference is significant (more than 50ms)
+                // and ensure we don't make too abrupt changes
+                float positionDiff = Math::Abs(targetPosition - currentPosition);
+                if (positionDiff > 0.05f) { // 50ms threshold
+                    // Smooth transition: move gradually towards target position
+                    float maxJump = 0.1f; // Maximum 100ms jump per frame
+                    if (positionDiff > maxJump) {
+                        if (targetPosition > currentPosition) {
+                            voice.SetPosition(currentPosition + maxJump);
+                        } else {
+                            voice.SetPosition(currentPosition - maxJump);
+                        }
+                    } else {
+                        voice.SetPosition(targetPosition);
+                    }
+                }
+            }
+        } else {
+            // Stop sound if sound is disabled
+            if (!voice.IsPaused()) {
+                voice.Pause();
+            }
         }
     }
 
@@ -353,6 +435,120 @@ class CentralCursor {
 
         // Default color if no steps are defined
         return vec4(1.0f, 1.0f, 1.0f, 1.0f); // White
+    }
+
+    void saveAndSerializeSettings() {
+        // Save the current settings by building JSON manually
+        // This function can be called when the user clicks a "Save" button in the UI
+
+        try {
+            string jsonSettings = "{\n";
+            jsonSettings += "    \"optionTitle\": \"" + optionTitle + "\",\n";
+            jsonSettings += "    \"settingsTitle\": \"" + settingsTitle + "\",\n";
+            jsonSettings += "    \"type\": \"" + type + "\",\n";
+            jsonSettings += "    \"isCursorShow\": " + (isCursorShow ? "true" : "false") + ",\n";
+            jsonSettings += "    \"settingsMustBeShow\": " + (settingsMustBeShow ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustBeHollowed\": " + (mustBeHollowed ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustDisplaySpeed\": " + (mustDisplaySpeed ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustBeInfluencedBySpeed\": " + (mustBeInfluencedBySpeed ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustShowYaw\": " + (mustShowYaw ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustShowYawText\": " + (mustShowYawText ? "true" : "false") + ",\n";
+            jsonSettings += "    \"mustLiveResetYawAngleByWall\": " + (mustLiveResetYawAngleByWall ? "true" : "false") + ",\n";
+            jsonSettings += "    \"yawLines\": " + yawLines + ",\n";
+            jsonSettings += "    \"yamLengthLine\": " + yamLengthLine + ",\n";
+            jsonSettings += "    \"normalScale\": " + normalScale + ",\n";
+            jsonSettings += "    \"strokeWidth\": " + strokeWidth + ",\n";
+            jsonSettings += "    \"speedInfluenceFactor\": " + speedInfluenceFactor + ",\n";
+            jsonSettings += "    \"updateDisplaySpeedByHz\": " + updateDisplaySpeedByHz + ",\n";
+
+            // Build colorSteps array
+            jsonSettings += "    \"colorSteps\": [\n";
+            for (uint i = 0; i < colorSteps.Length; i++) {
+                vec4 c = colorSteps[i];
+                jsonSettings += "        [" + c.x + ", " + c.y + ", " + c.z + ", " + c.w + "]";
+                if (i < colorSteps.Length - 1) jsonSettings += ",";
+                jsonSettings += "\n";
+            }
+            jsonSettings += "    ],\n";
+
+            // Build speedSteps array
+            jsonSettings += "    \"speedSteps\": [";
+            for (uint i = 0; i < speedSteps.Length; i++) {
+                jsonSettings = jsonSettings + speedSteps[i];
+                if (i < speedSteps.Length - 1) jsonSettings += ", ";
+            }
+            jsonSettings += "],\n";
+
+            // Build drawSteps array
+            jsonSettings += "    \"drawSteps\": [";
+            for (uint i = 0; i < drawSteps.Length; i++) {
+                jsonSettings += (drawSteps[i] ? "true" : "false");
+                if (i < drawSteps.Length - 1) jsonSettings += ", ";
+            }
+            jsonSettings += "]\n";
+            jsonSettings += "}";
+
+            Setting_Cursor = jsonSettings;
+        } catch {
+            print("Error saving settings on cursor");
+        }
+    }
+
+    void deserializeAndReadSettings() {
+        try
+        {
+            Json::Value root = Json::Parse(Setting_Cursor);
+
+            // Read basic properties directly from root (following your example pattern)
+            optionTitle = root["optionTitle"];
+            settingsTitle = root["settingsTitle"];
+            type = root["type"];
+            isCursorShow = root["isCursorShow"];
+            settingsMustBeShow = root["settingsMustBeShow"];
+            mustBeHollowed = root["mustBeHollowed"];
+            mustDisplaySpeed = root["mustDisplaySpeed"];
+            mustBeInfluencedBySpeed = root["mustBeInfluencedBySpeed"];
+            mustShowYaw = root["mustShowYaw"];
+            mustShowYawText = root["mustShowYawText"];
+            mustLiveResetYawAngleByWall = root["mustLiveResetYawAngleByWall"];
+            yawLines = uint16(root["yawLines"]);
+            yamLengthLine = root["yamLengthLine"];
+            normalScale = root["normalScale"];
+            strokeWidth = root["strokeWidth"];
+            speedInfluenceFactor = root["speedInfluenceFactor"];
+            updateDisplaySpeedByHz = root["updateDisplaySpeedByHz"];
+
+            // Read colorSteps array
+            Json::Value colorStepsArray = root["colorSteps"];
+            colorSteps = {};
+            for (uint i = 0; i < colorStepsArray.Length; ++i)
+            {
+                Json::Value colorArray = colorStepsArray[i];
+
+                vec4 color = vec4(colorArray[0], colorArray[1], colorArray[2], colorArray[3]);
+
+                colorSteps.InsertLast(color);
+            }
+
+            // Read speedSteps array
+            Json::Value speedStepsArray = root["speedSteps"];
+            speedSteps = {};
+            for (uint i = 0; i < speedStepsArray.Length; ++i)
+            {
+                speedSteps.InsertLast(uint(speedStepsArray[i]));
+            }
+
+            // Read drawSteps array
+            Json::Value drawStepsArray = root["drawSteps"];
+            drawSteps = {};
+            for (uint i = 0; i < drawStepsArray.Length; ++i)
+            {
+                drawSteps.InsertLast(drawStepsArray[i]);
+            }
+        }
+        catch {
+            print("The cursor settings JSON string seems corrupted. Please try to fix it or reset to default settings.");
+        }
     }
 }
 
