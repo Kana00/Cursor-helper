@@ -11,7 +11,7 @@
 
 *Enhance your ShootMania Obstacle mode experience with advanced cursor controls*
 
-![Presentation_1](assets/images/Presentation_1.png)
+![Presentation_1](previews/Presentation_1.png)
 
 </div>
 
@@ -34,7 +34,7 @@ CursorHelper is a feature-rich plugin for Openplanet4 that improuve cursor manag
 
 <div align="center">
 
-![Presentation_2](assets/images/Presentation_2.png)
+![Presentation_2](previews/Presentation_2.png)
 
 *Advanced cursor features in action*
 
@@ -74,9 +74,9 @@ Access the plugin settings through the Openplanet4 interface to customize:
 
 <div align="center">
 
-<img src="assets/images/Presentation_3.png" alt="Presentation 3" width="32%" />
-<img src="assets/images/Presentation_4.png" alt="Presentation 4" width="32%" />
-<img src="assets/images/Presentation_5.png" alt="Presentation 5" width="32%" />
+<img src="previews/Presentation_3.png" alt="Presentation 3" width="32%" />
+<img src="previews/Presentation_4.png" alt="Presentation 4" width="32%" />
+<img src="previews/Presentation_5.png" alt="Presentation 5" width="32%" />
 
 </div>
 
