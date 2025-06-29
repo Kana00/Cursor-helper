@@ -8,7 +8,7 @@ class CentralCursor {
     bool mustDisplaySpeed = true;
     bool mustBeInfluencedBySpeed = true;
     bool mustShowYaw = true;
-    bool mustShowYawText = true;
+    bool mustShowYawText = false;
     bool mustLiveResetYawAngleByWall = true;
     uint16 yawLines = 4;
     int yamLengthLine = 150;
@@ -196,20 +196,21 @@ class CentralCursor {
     }
 
     void drawCircle(vec2 position, float speed, float scale, float radius) {
+        float effectiveRadius = radius * scale;
         if (mustBeInfluencedBySpeed) {
-            radius = radius * scale + (speed * speedInfluenceFactor);
+            effectiveRadius += (speed * speedInfluenceFactor);
         }
         vec4 color = getColorForSpeed(speed);
 
         if (mustBeHollowed == false) {
             nvg::BeginPath();
-            nvg::Circle(position, radius);
+            nvg::Circle(position, effectiveRadius);
             nvg::FillColor(getColorForSpeed(speed));
             nvg::Fill();
             nvg::ClosePath();
         } else {
             nvg::BeginPath();
-            nvg::Circle(position, radius);
+            nvg::Circle(position, effectiveRadius);
             nvg::StrokeWidth(strokeWidth * UI::GetScale());
             nvg::StrokeColor(color);
             nvg::Stroke();
@@ -273,8 +274,6 @@ class CentralCursor {
         nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
         nvg::TextLetterSpacing(0.8f * scale);
     }
-
-
 
     void sortStepsArrayBySpeed() {
         // Sort the speedSteps, colorSteps, and drawSteps arrays based on speedSteps
