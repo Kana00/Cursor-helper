@@ -30,3 +30,7 @@ Thumbs.db
 *.swp
 *.swn
 *.swo
+
+# Personal settings
+# Ignore personal settings directory
+/.personal/
