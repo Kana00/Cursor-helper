@@ -402,7 +402,7 @@ class CentralCursor {
 
         // Find the appropriate color for the given speed
         for (uint i = 0; i < speedSteps.Length; i++) {
-            if (drawSteps[i] && speed <= speedSteps[i]) {
+            if (drawSteps[i] && speed <= float(speedSteps[i])) {
                 return colorSteps[i];
             }
         }
