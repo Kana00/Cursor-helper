@@ -10,8 +10,8 @@ class CentralCursor {
     bool mustShowYaw = true;
     bool mustShowYawText = true;
     bool mustLiveResetYawAngleByWall = true;
-    uint16 yawLines = 1;
-    int yamLengthLine = 10;
+    uint16 yawLines = 4;
+    int yamLengthLine = 150;
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
     float speedInfluenceFactor = 1.0f;
@@ -89,8 +89,11 @@ class CentralCursor {
 
             mustShowYaw = UI::Checkbox("Show Yaw", mustShowYaw);
             if (mustShowYaw) {
-                yawLines = UI::SliderInt("Yaw Lines", yawLines, 1, 15);
-                yamLengthLine = UI::SliderInt("Yaw Line Length", yamLengthLine, 1, 50);
+                // yawLines = UI::SliderInt("Yaw Lines", yawLines, 1, 15);
+                UI::RadioButton("4 lines", yawLines == 4) ? yawLines = 4 : yawLines;
+                UI::SameLine();
+                UI::RadioButton("8 lines", yawLines == 8) ? yawLines = 8 : yawLines;
+                yamLengthLine = UI::SliderInt("Yaw Line Length", yamLengthLine, 50, 400);
                 mustShowYawText = UI::Checkbox("Show Yaw Text", mustShowYawText);
                 mustLiveResetYawAngleByWall = UI::Checkbox("Show angle by wall", mustLiveResetYawAngleByWall);
             }
@@ -176,7 +179,7 @@ class CentralCursor {
 
         if (mustShowYaw) {
             // Draw the yaw cross at the cursor position
-            drawYawCross(cursorPosition, scale, radianRotation, horizontalVelocity);
+            drawYawCross(cursorPosition, scale, radianRotation, horizontalVelocity, normalRadius);
         }
     }
 
@@ -186,6 +189,7 @@ class CentralCursor {
         // Draw the speed text
         // nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
         nvg::FontSize(12.0f * scale);
+        nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
         nvg::TextLetterSpacing(0.8f * scale);
         vec2 textSize = nvg::TextBounds(speedText);
         nvg::Text(position.x - (textSize.x/2), position.y + (textSize.y/2.7), speedText);
@@ -195,7 +199,7 @@ class CentralCursor {
 
     void drawCircle(vec2 position, float speed, float scale, float radius) {
         if (mustBeInfluencedBySpeed) {
-            radius = 10.0f * scale + (speed * speedInfluenceFactor);
+            radius = radius * scale + (speed * speedInfluenceFactor);
         }
         vec4 color = getColorForSpeed(speed);
 
@@ -215,18 +219,34 @@ class CentralCursor {
         }
     }
 
-    void drawYawCross(vec2 position, float scale, float rotation, float speed) {
+    void drawYawCross(vec2 position, float scale, float rotation, float speed, float radius) {
         nvg::Translate(position);
         nvg::Rotate(rotation);
 
+        // Displays the difference between the current angle and the nearest wall angle (0 or 45)
+        float yawDeg = Math::Abs(Math::ToDeg(rotation));
+        float nearestWall = Math::Round(yawDeg / 45.0f) * 45.0f;
+        float diff = yawDeg - nearestWall;
+
+        float effectiveRadius = radius * scale;
+        if (mustBeInfluencedBySpeed) {
+            effectiveRadius += (speed * speedInfluenceFactor);
+        }
+
         for (uint i = 0; i < yawLines; i++) {
-            float angle = rotation + (i * Math::PI / yawLines) + ((3 * Math::PI) / 2);
-            float xOffset = Math::Cos(angle) * yamLengthLine * scale;
-            float yOffset = Math::Sin(angle) * yamLengthLine * scale;
+            float angle = ( (2.0f * Math::PI * float(i)) / float(yawLines) ) + (Math::PI / 2.0f);
+
+            // Point de départ : sur le bord du cercle
+            float innerXOffset = Math::Cos(angle) * effectiveRadius;
+            float innerYOffset = Math::Sin(angle) * effectiveRadius;
+
+            // Point d'arrivée : à l'extérieur du cercle
+            float outerXOffset = Math::Cos(angle) * (effectiveRadius + yamLengthLine);
+            float outerYOffset = Math::Sin(angle) * (effectiveRadius + yamLengthLine);
 
             nvg::BeginPath();
-            nvg::MoveTo(vec2(0, 0));
-            nvg::LineTo(vec2(xOffset, yOffset));
+            nvg::MoveTo(vec2(innerXOffset, innerYOffset));
+            nvg::LineTo(vec2(outerXOffset, outerYOffset));
             nvg::StrokeWidth(strokeWidth * UI::GetScale());
             nvg::StrokeColor(getColorForSpeed(speed));
             nvg::Stroke();
@@ -236,19 +256,17 @@ class CentralCursor {
         nvg::ResetTransform();
 
         if (mustShowYawText) {
+            float yOffset = position.y - effectiveRadius - 20;
+            nvg::FontSize(12.0f * scale);
+            nvg::FillColor(vec4(1.0f, 1.0f, 1.0f, 1.0f));
             if(mustLiveResetYawAngleByWall) {
-                string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
-                // Displays the difference between the current angle and the nearest wall angle (0 or 45)
-                float yawDeg = Math::Abs(Math::Round(Math::ToDeg(rotation)));
-                float nearestWall = Math::Round(yawDeg / 45.0f) * 45.0f;
-                float diff = Math::Abs(yawDeg - nearestWall);
-                yawText = tostring(int(diff));
+                string yawText = tostring(int(Math::Abs(diff)));
                 vec2 textSize = nvg::TextBounds(yawText);
-                nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+                nvg::Text(position.x - (textSize.x/2), yOffset, yawText);
             } else {
                 string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
                 vec2 textSize = nvg::TextBounds(yawText);
-                nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+                nvg::Text(position.x - (textSize.x/2), yOffset, yawText);
             }
         }
     }
