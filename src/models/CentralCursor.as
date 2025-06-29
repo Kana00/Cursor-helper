@@ -7,6 +7,11 @@ class CentralCursor {
     bool mustBeHollowed = true;
     bool mustDisplaySpeed = true;
     bool mustBeInfluencedBySpeed = true;
+    bool mustShowYaw = true;
+    bool mustShowYawText = true;
+    bool mustLiveResetYawAngle = true;
+    uint16 yawLines = 1;
+    int yamLengthLine = 10;
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
     float speedInfluenceFactor = 1.0f;
@@ -52,22 +57,17 @@ class CentralCursor {
             UI::Separator(); // --------------------------------------------------------------------
 
             // Draw cursor type selection
-            UI::Text("Cursor Type");
+            UI::Text("Cursor global shape");
             if (UI::RadioButton("Dot", type == "DOT")) {
                 type = "DOT";
             }
             UI::SameLine();
-            if (UI::RadioButton("Cross", type == "CROSS")) {
-                type = "CROSS";
-            }
-            UI::SameLine();
-            if (UI::RadioButton("Square", type == "SQUARE")) {
-                type = "SQUARE";
+            if (UI::RadioButton("None", type == "NONE")) {
+                type = "NONE";
             }
 
             // hollowed cursor option checkbox
             mustBeHollowed = UI::Checkbox("Hollowed Cursor", mustBeHollowed);
-
             mustDisplaySpeed = UI::Checkbox("Display Speed", mustDisplaySpeed);
 
             mustBeInfluencedBySpeed = UI::Checkbox("Influenced by Speed", mustBeInfluencedBySpeed);
@@ -84,6 +84,16 @@ class CentralCursor {
             // Draw stroke width
             UI::Text("Stroke Width");
             strokeWidth = UI::SliderFloat("Width", strokeWidth, 0.1f, 10.0f, "%.1f", UI::SliderFlags::AlwaysClamp);
+
+            UI::Separator(); // --------------------------------------------------------------------
+
+            mustShowYaw = UI::Checkbox("Show Yaw", mustShowYaw);
+            if (mustShowYaw) {
+                yawLines = UI::SliderInt("Yaw Lines", yawLines, 1, 15);
+                yamLengthLine = UI::SliderInt("Yaw Line Length", yamLengthLine, 1, 50);
+                mustShowYawText = UI::Checkbox("Show Yaw Text", mustShowYawText);
+                mustLiveResetYawAngle = UI::Checkbox("Show angle by wall", mustLiveResetYawAngle);
+            }
 
             UI::Separator(); // --------------------------------------------------------------------
 
@@ -149,25 +159,24 @@ class CentralCursor {
 
         vec2 cursorPosition = vec2(Draw::GetWidth() / 2, Draw::GetHeight() / 2);
         float scale = normalScale * UI::GetScale();
-        float rotation = 0.0f;
+        float radianRotation = sm_script.AimYaw;
+        float normalRadius = 10.0f;
 
         // Draw the cursor based on the selected type
         if (type == "DOT") {
-            drawCircleDot(cursorPosition, horizontalVelocity, scale, rotation);
-        } else if (type == "CROSS") {
-            // UI::DrawLine(cursorCenter - vec2(10.0f * normalScale, 0), cursorCenter + vec2(10.0f * normalScale, 0), colorSteps[0]);
-            // UI::DrawLine(cursorCenter - vec2(0, 10.0f * normalScale), cursorCenter + vec2(0, 10.0f * normalScale), colorSteps[0]);
-        } else if (type == "SQUARE") {
-            // Draw an SQUARE shape
-            // vec2 SQUARETip = cursorCenter;
-            // vec2 SQUAREBaseLeft = cursorCenter - vec2(10.0f * normalScale, 5.0f * normalScale);
-            // vec2 SQUAREBaseRight = cursorCenter - vec2(10.0f * normalScale, -5.0f * normalScale);
-            // UI::DrawTriangle(SQUARETip, SQUAREBaseLeft, SQUAREBaseRight, colorSteps[0]);
+            drawCircle(cursorPosition, horizontalVelocity, scale, normalRadius);
+        } else if (type == "NONE") {
+            // Do nothing
         }
 
         if (mustDisplaySpeed) {
             // Draw the speed number at the cursor position
             drawSpeedNumber(cursorPosition, horizontalVelocity, scale);
+        }
+
+        if (mustShowYaw) {
+            // Draw the yaw cross at the cursor position
+            drawYawCross(cursorPosition, scale, radianRotation, horizontalVelocity);
         }
     }
 
@@ -184,8 +193,7 @@ class CentralCursor {
         // nvg::TextBox(position.x - radius, position.y + yOffset, radius * 2, speedText);
     }
 
-    void drawCircleDot(vec2 position, float speed, float scale, float rotation) {
-        float radius = 10.0f * scale;
+    void drawCircle(vec2 position, float speed, float scale, float radius) {
         if (mustBeInfluencedBySpeed) {
             radius = 10.0f * scale + (speed * speedInfluenceFactor);
         }
@@ -206,6 +214,35 @@ class CentralCursor {
             nvg::ClosePath();
         }
     }
+
+    void drawYawCross(vec2 position, float scale, float rotation, float speed) {
+        nvg::Translate(position);
+        nvg::Rotate(rotation);
+
+        for (uint i = 0; i < yawLines; i++) {
+            float angle = rotation + (i * Math::PI / yawLines) + ((3 * Math::PI) / 2);
+            float xOffset = Math::Cos(angle) * yamLengthLine * scale;
+            float yOffset = Math::Sin(angle) * yamLengthLine * scale;
+
+            nvg::BeginPath();
+            nvg::MoveTo(vec2(0, 0));
+            nvg::LineTo(vec2(xOffset, yOffset));
+            nvg::StrokeWidth(strokeWidth * UI::GetScale());
+            nvg::StrokeColor(getColorForSpeed(speed));
+            nvg::Stroke();
+            nvg::ClosePath();
+        }
+
+        nvg::ResetTransform();
+
+        if (mustShowYawText) {
+            string yawText = tostring(Math::Abs(Math::Round(Math::ToDeg(rotation))));
+            vec2 textSize = nvg::TextBounds(yawText);
+            nvg::Text(position.x - (textSize.x/2), position.y - 100, yawText);
+        }
+    }
+
+
 
     void sortStepsArrayBySpeed() {
         // Sort the speedSteps, colorSteps, and drawSteps arrays based on speedSteps
