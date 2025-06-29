@@ -26,7 +26,7 @@ string Setting_Cursor = """
     ],
     "speedSteps": [50, 60, 70, 80],
     "drawSteps": [true, true, true, true],
-    "mustPlaySpeedSound": true,
+    "mustPlaySpeedSound": false,
     "volume": 0.5
 }
 """;
