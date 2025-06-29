@@ -52,5 +52,5 @@ void Update(float delta) {
 
     if (appIsNotReadyToRenderMenu) return;
 
-    centralCursor.drawCursor();
+    centralCursor.drawCursor(delta);
 }

@@ -15,6 +15,13 @@ class CentralCursor {
     float normalScale = 2.4f;
     float strokeWidth = 3.0f;
     float speedInfluenceFactor = 1.0f;
+    float updateDisplaySpeedByHz = 1.0f;
+
+    // Variables for speed display frequency control
+    float lastDisplayedSpeed = 0.0f;
+    float maxSpeedSinceLastUpdate = 0.0f;
+    float timeSinceLastUpdate = 0.0f;
+
     vec4[] colorSteps = {
         vec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
         vec4(1.0f, 1.0f, 0.0f, 1.0f), // Yellow
@@ -69,6 +76,11 @@ class CentralCursor {
             // hollowed cursor option checkbox
             mustBeHollowed = UI::Checkbox("Hollowed Cursor", mustBeHollowed);
             mustDisplaySpeed = UI::Checkbox("Display Speed", mustDisplaySpeed);
+
+            if (mustDisplaySpeed) {
+                updateDisplaySpeedByHz = UI::SliderFloat("Speed Update Hz", updateDisplaySpeedByHz, 1.0f, 60.0f, "%.1f Hz", UI::SliderFlags::AlwaysClamp);
+                UI::Text("Speed display updates " + updateDisplaySpeedByHz + " times per second (every " + tostring(Math::Round(1000.0f / updateDisplaySpeedByHz)) + "ms)");
+            }
 
             mustBeInfluencedBySpeed = UI::Checkbox("Influenced by Speed", mustBeInfluencedBySpeed);
             if (mustBeInfluencedBySpeed) {
@@ -150,7 +162,7 @@ class CentralCursor {
         UI::End();
     }
 
-    void drawCursor() {
+    void drawCursor(float delta) {
         if (isCursorShow == false) {
             return;
         }
@@ -159,6 +171,9 @@ class CentralCursor {
         CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
 
         float horizontalVelocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
+
+        // Update speed display with frequency control (approximating 60 FPS)
+        updateSpeedDisplay(horizontalVelocity, delta);
 
         vec2 cursorPosition = vec2(Draw::GetWidth() / 2, Draw::GetHeight() / 2);
         float scale = normalScale * UI::GetScale();
@@ -183,8 +198,30 @@ class CentralCursor {
         }
     }
 
+    void updateSpeedDisplay(float currentSpeed, float deltaTime) {
+        // Update the timer (deltaTime is in milliseconds)
+        timeSinceLastUpdate += deltaTime;
+
+        // Track the maximum speed since last update
+        if (currentSpeed > maxSpeedSinceLastUpdate) {
+            maxSpeedSinceLastUpdate = currentSpeed;
+        }
+
+        // Calculate update interval from Hz: if updateDisplaySpeedByHz = 10, we want updates every 100ms
+        // 1 second = 1000ms, so interval = 1000ms / Hz
+        float updateIntervalMs = 1000.0f / updateDisplaySpeedByHz;
+
+        // Update displayed speed if enough time has passed
+        if (timeSinceLastUpdate >= updateIntervalMs) {
+            lastDisplayedSpeed = maxSpeedSinceLastUpdate;
+            maxSpeedSinceLastUpdate = 0.0f; // Reset for next interval
+            timeSinceLastUpdate = 0.0f; // Reset timer
+        }
+    }
+
     void drawSpeedNumber(vec2 position, float speed, float scale) {
-        string speedText = tostring(Math::Round(speed));
+        // Use the last displayed speed (updated by updateSpeedDisplay)
+        string speedText = tostring(Math::Round(lastDisplayedSpeed));
 
         // Draw the speed text
         // nvg::TextAlign(nvg::Align::Center | nvg::Align::Middle);
