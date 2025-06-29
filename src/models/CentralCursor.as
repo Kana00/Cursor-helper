@@ -481,7 +481,6 @@ class CentralCursor {
         try
         {
             Json::Value root = Json::Parse(Setting_Cursor);
-            print(Setting_Cursor);
 
             // Read basic properties directly from root (following your example pattern)
             optionTitle = root["optionTitle"];
