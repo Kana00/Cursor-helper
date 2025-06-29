@@ -19,12 +19,14 @@ string Setting_Cursor = """
     "speedInfluenceFactor": 1.0,
     "updateDisplaySpeedByHz": 7.0,
     "colorSteps": [
-        [1.0, 0.0, 0.0, 1.0], // Red
-        [1.0, 1.0, 0.0, 1.0], // Yellow
-        [0.0, 1.0, 0.0, 1.0], // Green
-        [0.0, 0.0, 1.0, 1.0]  // Blue
+        [1.0, 0.0, 0.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0, 1.0],
+        [0.0, 0.0, 1.0, 1.0]
     ],
     "speedSteps": [50, 60, 70, 80],
-    "drawSteps": [true, true, true, true]
+    "drawSteps": [true, true, true, true],
+    "mustPlaySpeedSound": true,
+    "volume": 0.5
 }
 """;

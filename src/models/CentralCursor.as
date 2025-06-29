@@ -184,7 +184,7 @@ class CentralCursor {
         CSmPlayer@ sm_player = cast<CSmPlayer>(GetApp().CurrentPlayground.GameTerminals[0].GUIPlayer);
         CSmScriptPlayer@ sm_script = sm_player.ScriptAPI;
 
-        float horizontalVelocity = ConvertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
+        float horizontalVelocity = convertMeterPerSecondToKilometerPerHour(Math::Abs(sm_script.Velocity.x + sm_script.Velocity.z));
 
         // Update speed display with frequency control (approximating 60 FPS)
         updateSpeedDisplay(horizontalVelocity, delta);
@@ -453,7 +453,7 @@ class CentralCursor {
             // Build speedSteps array
             jsonSettings += "    \"speedSteps\": [";
             for (uint i = 0; i < speedSteps.Length; i++) {
-                jsonSettings = jsonSettings + speedSteps[i];
+                jsonSettings += "" + speedSteps[i];
                 if (i < speedSteps.Length - 1) jsonSettings += ", ";
             }
             jsonSettings += "],\n";
@@ -464,7 +464,11 @@ class CentralCursor {
                 jsonSettings += (drawSteps[i] ? "true" : "false");
                 if (i < drawSteps.Length - 1) jsonSettings += ", ";
             }
-            jsonSettings += "]\n";
+            jsonSettings += "],\n";
+
+            // Add sound cursor settings (no trailing comma after last property!)
+            jsonSettings += "    \"mustPlaySpeedSound\": " + (mustPlaySpeedSound ? "true" : "false") + ",\n";
+            jsonSettings += "    \"volume\": " + volume + "\n";
             jsonSettings += "}";
 
             Setting_Cursor = jsonSettings;
@@ -477,6 +481,7 @@ class CentralCursor {
         try
         {
             Json::Value root = Json::Parse(Setting_Cursor);
+            print(Setting_Cursor);
 
             // Read basic properties directly from root (following your example pattern)
             optionTitle = root["optionTitle"];
@@ -524,6 +529,10 @@ class CentralCursor {
             {
                 drawSteps.InsertLast(drawStepsArray[i]);
             }
+
+            // Read sound cursor settings
+            mustPlaySpeedSound = root["mustPlaySpeedSound"];
+            volume = root["volume"];
         }
         catch {
             print("The cursor settings JSON string seems corrupted. Please try to fix it or reset to default settings.");
